@@ -16,7 +16,7 @@ class  HomePage extends StatelessWidget {
               children: <Widget>[
                 new Container(
                   margin: EdgeInsets.only(top:30),
-                  height:100,
+                  height:75,
                   child:  new Image.asset("images/slumber.png"),
                 )
               ],
