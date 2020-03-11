@@ -11,5 +11,5 @@ class Journey extends StatelessWidget{
       ),
     );
   }
-  }
+}
 
