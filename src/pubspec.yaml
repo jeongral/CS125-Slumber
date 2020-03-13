@@ -46,6 +46,9 @@ flutter:
   #  - images/a_dot_ham.jpeg
   assets:
     - images/slumber.png
+    - images/gear.png
+    - images/bed.png
+    - images/heart.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
