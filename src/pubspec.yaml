@@ -30,6 +30,7 @@ dependencies:
   google_fonts: ^0.3.9
   sensors: ^0.4.1+8
   flutter_ringtone_player: ^2.0.0
+  percent_indicator: ^1.0.10
 
 dev_dependencies:
   flutter_test:
