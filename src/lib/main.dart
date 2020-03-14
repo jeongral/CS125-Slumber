@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import './ui/home_page.dart';
 import './ui/journey_page.dart';
 import './ui/profile_page.dart';
+import './ui/test.dart';
 //import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 
 
@@ -52,7 +53,7 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
   int currentTab = 0;
   HomePage one;
   Journey two;
-  Profile three;
+  MenuDashboardPage three;
   List<Widget> pages;
   Widget currentPage;
 
@@ -81,7 +82,7 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
       super.initState();
       one = HomePage();
       two = Journey(); // probably don't need any of these params
-      three = Profile();
+      three = MenuDashboardPage();
       //three.createState();
       //one.createState();
       pages = [one,two,three];

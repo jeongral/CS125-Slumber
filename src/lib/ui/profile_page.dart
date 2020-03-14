@@ -93,7 +93,8 @@ static Image getImg(String str) {
                           height: 52.0,
                           width: 52.0,
                         ),
-                        title: new Text("User Preferences"),
+                        title: new Text("User Preferences"))])
+                ));
                         
-
+  }
 }
