@@ -18,11 +18,13 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
   Animation<double> _menuScaleAnimation;
   Animation<Offset> _slideAnimation;
   ScrollController scrollController;
+  PageController pageController;
 
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
+    pageController = PageController(viewportFraction: 0.8);
     _controller = AnimationController(vsync: this, duration: duration);
     _scaleAnimation = Tween<double>(begin: 1, end: 0.8).animate(_controller);
     _menuScaleAnimation = Tween<double>(begin: 0.5, end: 1).animate(_controller);
@@ -100,6 +102,19 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                  )
 ));
 }
+  Container reccIcon(String url){
+    return new Container(
+      width: 50.0,
+      height: 50.0,
+      decoration: new BoxDecoration(
+          shape: BoxShape.circle,
+          image: new DecorationImage(
+          fit: BoxFit.fill,
+          image: new NetworkImage(
+                 url)
+                 )
+));
+}
 
   Widget dashboard(context) {
     return AnimatedPositioned(
@@ -148,31 +163,59 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                     ],
                   ),
                   SizedBox(height: 50),
+
                   Container(
                     height: 200,
+                    width: 500,
                     child: PageView(
-                      controller: PageController(viewportFraction: 0.8),
+                      controller: pageController,
                       scrollDirection: Axis.horizontal,
                       pageSnapping: true,
                       children: <Widget>[
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          color: Colors.redAccent,
-                          width: 100,
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          color: Colors.blueAccent,
-                          width: 100,
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          color: Colors.greenAccent,
-                          width: 100,
-                        ),
-                      ],
-                    ),
-                  ),
+
+                        FutureBuilder(
+                          future: getRecs(),
+                          builder: (_,snapshot){
+
+                            if(snapshot.connectionState == ConnectionState.waiting){
+                              return Center(child: Text("Loading..."));
+                            }else{
+                              return ListView.builder(
+                              controller: pageController,
+                              scrollDirection: Axis.horizontal,
+                              
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (_,index){
+                                return Container(
+                                  height: 199,
+                                  width: 300,
+
+                                child: Card(    
+                                  color: Color(0xFF1d1d1e),
+                                  child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+
+                                    Text(snapshot.data[index].data["Title"], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                                    reccIcon(snapshot.data[index].data["Image"]),
+                                    Text(snapshot.data[index].data["Details"], style: TextStyle(fontSize: 14),),
+                                  ]
+                                  
+                                )));
+                              
+                            }
+                              );
+                            }
+                          }
+                      )
+                      ]
+
+                      )
+                      ),
+
+
+                    
+                  
                   SizedBox(height: 20),
                   Text("Settings", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),),
                   SizedBox(height: 10),
@@ -201,7 +244,7 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                             shrinkWrap: true,
                             itemCount: snapshot.data.length,
                             itemBuilder: (_,index){
-                              return ListTile(
+                              return ListTile(    
                                 title: Text(snapshot.data[index].data["Title"], style: TextStyle(fontSize: 18),),
                                 trailing: Text(snapshot.data[index].data["Value"], style: TextStyle(fontSize: 18, color: Colors.grey))
                                 );
@@ -225,6 +268,11 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
   Future getData() async {
     var firestore = Firestore.instance;
     QuerySnapshot qn = await firestore.collection("UserSettings").getDocuments();
+    return qn.documents;
+  }
+  Future getRecs() async{
+    var firestore = Firestore.instance;
+    QuerySnapshot qn = await firestore.collection("Recommendations").getDocuments();
     return qn.documents;
   }
 
