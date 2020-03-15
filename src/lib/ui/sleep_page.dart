@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:sensors/sensors.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slumber/snoring_analysis.dart';
+import 'alarm_page.dart';
 
 class SleepPage extends StatefulWidget {
   DateTime _sleepTime;
@@ -20,11 +20,13 @@ class _SleepPageState extends State<SleepPage> {
   DateTime _sleepTime;
   DateTime _wakeTime;
   Position _home;
+  Duration _difference;
   _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 
   List<double> _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
       <StreamSubscription<dynamic>>[];
+  List<Map<DateTime, List<double>>> _gyroscope = [];
 
   @override
   void initState() {
@@ -41,11 +43,21 @@ class _SleepPageState extends State<SleepPage> {
         _home = coords;
       }));
       
+    _difference = _wakeTime.difference(_sleepTime);
+    Timer(Duration(seconds: _difference.inSeconds), () {
+      Navigator.pop(context);
+      Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AlarmPage())
+      );
+    });
+
     _streamSubscriptions
         .add(gyroscopeEvents.listen((GyroscopeEvent event) {
           setState(() {
             _gyroscopeValues = <double>[event.x, event.y, event.z];
           });
+          _gyroscope.add({DateTime.now(): _gyroscopeValues});
     }));
   }
 
@@ -63,7 +75,7 @@ class _SleepPageState extends State<SleepPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> gyroscope =
+    List<String> gyroscope =
         _gyroscopeValues?.map((double v) => v.toStringAsFixed(1))?.toList();
     return Scaffold(
         body: Container(
@@ -76,7 +88,7 @@ class _SleepPageState extends State<SleepPage> {
                               gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [Color(0xff374ABE), Color(0xff64B6FF)]
+                                  colors: [Color(0xff89216B), Color(0xffDA4453)]
                               )
                           ),
                           child: Column(
@@ -94,47 +106,11 @@ class _SleepPageState extends State<SleepPage> {
                                         )
                                     )
                                 ),
-                                RaisedButton(
-                                    color: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    splashColor: Colors.transparent,
-                                    elevation: 0,
-                                    onPressed: () {
-                                      DatePicker.showTimePicker(
-                                          context,
-                                          theme: DatePickerTheme(),
-                                          showTitleActions: true,
-                                          onConfirm: (time) {
-                                            final DateTime now = DateTime.now();
-                                            if (time.hour < _sleepTime.hour)
-                                              _wakeTime = DateTime(now.year, now.month, now.day + 1, time.hour, time.minute, time.second);
-                                            else
-                                              _wakeTime = DateTime(now.year, now.month, now.day, time.hour, time.minute, time.second);
-                                            setState(() {});
-                                          },
-                                          currentTime: _wakeTime,
-                                          locale: LocaleType.en
-                                      );
-                                    },
-                                    child: Container(
-                                        child: Text(
-                                            'Change Time',
-                                            style: GoogleFonts.quicksand(
-                                                textStyle: TextStyle(
-                                                    fontSize: 18.0,
-                                                    color: Color.fromARGB(200, 255, 255, 255)
-                                                )
-                                            )
-                                        )
-                                    )
-                                ),
                                 Container(
                                   child: Text(
                                     'Gyroscope: $gyroscope',
                                     style: GoogleFonts.quicksand(
-                                      fontSize: 16.0,
+                                      fontSize: 18.0,
                                       color: Color.fromARGB(200, 255, 255, 255)
                                     )
                                   )
