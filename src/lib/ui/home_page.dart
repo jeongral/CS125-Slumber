@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'sleep_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,20 +11,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Duration _timerDuration = new Duration(seconds: 1);
-  bool isStarted;
+  Duration _timerDuration = Duration(seconds: 1);
+  bool _isStarted = false;
+  bool _isVisible = false;
 
   DateTime _sleepTime;
   DateTime _wakeTime;
   String _sSleepTime;
   String _sWakeTime;
 
+  Map<String, String> _cycles = {'first': '', 'second': '', 'third': '', 'fourth': ''};
+  String _scycles = '';
+
   PageController _controller;
 
   @override
   void initState() {
     super.initState();
-    isStarted = false;
 
     final DateTime now = DateTime.now();
     _sleepTime = now;
@@ -36,7 +37,7 @@ class _HomePageState extends State<HomePage> {
 
     _controller = PageController();
     Timer.periodic(_timerDuration, (Timer t) {
-      if (isStarted)
+      if (_isStarted)
         t.cancel();
       else
         _getTime();
@@ -45,7 +46,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    isStarted = true;
+    _isStarted = true;
     super.dispose();
   }
 
@@ -56,6 +57,8 @@ class _HomePageState extends State<HomePage> {
   void _getTime() {
     final DateTime now = DateTime.now();
     _sleepTime = now;
+    if (_wakeTime.isBefore(_sleepTime))
+      _wakeTime = DateTime(now.year, now.month, now.day + 1, _wakeTime.hour, _wakeTime.minute, _wakeTime.second);
     final String formattedSleepTime = _formatDateTime(now);
     setState(() {
       _sSleepTime = formattedSleepTime;
@@ -64,7 +67,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext) {
-    // TODO: implement build
     return Scaffold(
         body: Container(
             child: Stack(
@@ -140,8 +142,9 @@ class _HomePageState extends State<HomePage> {
                                             theme: DatePickerTheme(),
                                             showTitleActions: true,
                                             onConfirm: (time) {
+                                              _isVisible = false;
                                               final DateTime now = DateTime.now();
-                                              if (time.hour < _sleepTime.hour)
+                                              if (_wakeTime.isBefore(_sleepTime))
                                                 _wakeTime = DateTime(now.year, now.month, now.day + 1, time.hour, time.minute, time.second);
                                               else
                                                 _wakeTime = DateTime(now.year, now.month, now.day, time.hour, time.minute, time.second);
@@ -178,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       elevation: 0,
                                       onPressed: () {
-                                        isStarted = true;
+                                        _isVisible = false;
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (context) => SleepPage(_sleepTime, _wakeTime))
@@ -249,6 +252,7 @@ class _HomePageState extends State<HomePage> {
                                             theme: DatePickerTheme(),
                                             showTitleActions: true,
                                             onConfirm: (time) {
+                                              _isVisible = false;
                                               final DateTime now = DateTime.now();
                                               if (time.hour < _sleepTime.hour)
                                                 _wakeTime = DateTime(now.year, now.month, now.day + 1, time.hour, time.minute, time.second);
@@ -287,6 +291,12 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       elevation: 0,
                                       onPressed: () {
+                                        _cycles['first'] = _formatDateTime(_wakeTime.add(Duration(minutes: -540)));
+                                        _cycles['second'] = _formatDateTime(_wakeTime.add(Duration(minutes: -450)));
+                                        _cycles['third'] = _formatDateTime(_wakeTime.add(Duration(minutes: -360)));
+                                        _cycles['fourth'] = _formatDateTime(_wakeTime.add(Duration(minutes: -270)));
+                                        _scycles = _cycles['first'] + ' or ' + _cycles['second'] + ' or ' + _cycles['third'] + ' or ' + _cycles['fourth'];
+                                        _isVisible = true;
                                       },
                                       child: Container(
                                           width: 200.0,
@@ -302,6 +312,38 @@ class _HomePageState extends State<HomePage> {
                                               )
                                           )
                                       )
+                                  ),
+                                  Container(
+                                      height: 20
+                                  ),
+                                  Container(
+                                    alignment: Alignment.center,
+                                    child: Visibility(
+                                      visible: _isVisible,
+                                      child: Text(
+                                        'You should try to fall asleep at',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.quicksand(
+                                          fontSize: 24.0,
+                                          color: Color.fromARGB(200, 255, 255, 255)
+                                        )
+                                      )
+                                    )
+                                  ),
+                                  Container(
+                                    alignment: Alignment.center,
+                                    width: 400,
+                                    child: Visibility(
+                                      visible: _isVisible,
+                                      child: Text(
+                                        '$_scycles',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.quicksand(
+                                          fontSize: 36.0,
+                                          color: Color.fromARGB(200, 255, 255, 255)
+                                        )
+                                      )
+                                    )
                                   )
                                 ]
                             )
@@ -327,79 +369,4 @@ class _HomePageState extends State<HomePage> {
         )
     );
   }
-}
-
-class SimpleBarChart extends StatelessWidget {
-  final List<charts.Series> seriesList;
-  final bool animate;
-
-  SimpleBarChart(this.seriesList, {this.animate});
-
-  factory SimpleBarChart.withSampleData() {
-    return SimpleBarChart(
-      _createSampleData(),
-      animate: false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return charts.BarChart(
-      seriesList,
-      animate: animate,
-      defaultRenderer: charts.BarRendererConfig(
-        cornerStrategy: charts.ConstCornerStrategy(5),
-      ),
-      domainAxis: charts.OrdinalAxisSpec(
-          renderSpec: charts.SmallTickRendererSpec(
-              labelStyle: charts.TextStyleSpec(
-                  fontSize: 18,
-                  color: charts.ColorUtil.fromDartColor(Colors.grey)
-              ),
-              lineStyle: charts.LineStyleSpec(
-                  color: charts.ColorUtil.fromDartColor(Colors.grey)
-              )
-          )
-      ),
-      primaryMeasureAxis: charts.NumericAxisSpec(
-          renderSpec: charts.GridlineRendererSpec(
-              labelStyle: charts.TextStyleSpec(
-                  fontSize: 18,
-                  color: charts.ColorUtil.fromDartColor(Colors.grey)
-              ),
-              lineStyle: charts.LineStyleSpec(
-                  color: charts.ColorUtil.fromDartColor(Colors.grey)
-              )
-          )
-      ),
-    );
-  }
-
-  /// Create one series with sample hard coded data.
-  static List<charts.Series<OrdinalSales, String>> _createSampleData() {
-    final data = [
-      OrdinalSales('2014', 5),
-      OrdinalSales('2015', 25),
-      OrdinalSales('2016', 100),
-      OrdinalSales('2017', 75),
-    ];
-
-    return [
-      charts.Series<OrdinalSales, String>(
-        id: 'Sales',
-        colorFn: (_, __) => charts.ColorUtil.fromDartColor(Colors.deepPurple),
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: data,
-      )
-    ];
-  }
-}
-
-/// Sample ordinal data type.
-class OrdinalSales {
-  final String year;
-  final int sales;
-
-  OrdinalSales(this.year, this.sales);
 }

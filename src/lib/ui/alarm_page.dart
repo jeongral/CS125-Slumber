@@ -1,65 +1,38 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sensors/sensors.dart';
-import 'alarm_page.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'home_page.dart';
 
-class SleepPage extends StatefulWidget {
-  DateTime _sleepTime;
-  DateTime _wakeTime;
-  SleepPage(this._sleepTime, this._wakeTime);
-  _SleepPageState createState() => _SleepPageState(this._sleepTime, this._wakeTime);
+class AlarmPage extends StatefulWidget {
+  _AlarmPageState createState() => _AlarmPageState();
 }
 
-class _SleepPageState extends State<SleepPage> {
-  DateTime _sleepTime;
-  DateTime _wakeTime;
-  Duration _difference;
-  _SleepPageState(this._sleepTime, this._wakeTime);
-
-  List<double> _gyroscopeValues;
-  List<StreamSubscription<dynamic>> _streamSubscriptions =
-      <StreamSubscription<dynamic>>[];
-  List<Map<DateTime, List<double>>> _gyroscope = [];
-
+class _AlarmPageState extends State<AlarmPage> {
+  String s;
   @override
   void initState() {
     super.initState();
-    _difference = _wakeTime.difference(_sleepTime);
-    Timer(Duration(seconds: _difference.inSeconds), () {
-      Navigator.pop(context);
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AlarmPage())
-      );
-    });
-
-    _streamSubscriptions
-        .add(gyroscopeEvents.listen((GyroscopeEvent event) {
-          setState(() {
-            _gyroscopeValues = <double>[event.x, event.y, event.z];
-          });
-          _gyroscope.add({DateTime.now(): _gyroscopeValues});
-    }));
+    if (DateTime.now().hour < 11)
+      s = 'Morning!';
+    else if (DateTime.now().hour >= 11 && DateTime.now().hour < 17)
+      s = 'Afternoon!';
+    else if (DateTime.now().hour >= 17 && DateTime.now().hour < 20)
+      s = 'Evening!';
+    else
+      s = 'Night!';
+    FlutterRingtonePlayer.playAlarm(
+      volume: 0.5,
+      looping: true,
+      asAlarm: true
+    );
   }
 
   @override
   void dispose() {
     super.dispose();
-    for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
-      subscription.cancel();
-    }
   }
-
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormat.jm().format(dateTime);
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<String> gyroscope =
-        _gyroscopeValues?.map((double v) => v.toStringAsFixed(1))?.toList();
     return Scaffold(
         body: Container(
             child: Stack(
@@ -71,7 +44,7 @@ class _SleepPageState extends State<SleepPage> {
                               gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [Color(0xff89216B), Color(0xffDA4453)]
+                                  colors: [Color(0xffF39F86), Color(0xffF9D976)]
                               )
                           ),
                           child: Column(
@@ -80,26 +53,26 @@ class _SleepPageState extends State<SleepPage> {
                               children: <Widget>[
                                 Container(
                                     child: Text(
-                                        'Alarm ' + _formatDateTime(_wakeTime),
+                                        "Good",
                                         style: GoogleFonts.quicksand(
                                             textStyle: TextStyle(
-                                                fontSize: 36.0,
+                                                fontSize: 60.0,
                                                 color: Color.fromARGB(200, 255, 255, 255)
                                             )
                                         )
                                     )
                                 ),
                                 Container(
-                                  child: Text(
-                                    'Gyroscope: $gyroscope',
-                                    style: GoogleFonts.quicksand(
-                                      fontSize: 18.0,
-                                      color: Color.fromARGB(200, 255, 255, 255)
+                                    margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 10.0),
+                                    child: Text(
+                                        s,
+                                        style: GoogleFonts.quicksand(
+                                            textStyle: TextStyle(
+                                                fontSize: 60.0,
+                                                color: Color.fromARGB(200, 255, 255, 255)
+                                            )
+                                        )
                                     )
-                                  )
-                                ),
-                                Container(
-                                  height: 20
                                 ),
                                 RaisedButton(
                                     color: Color.fromARGB(50, 255, 255, 255),
@@ -112,6 +85,7 @@ class _SleepPageState extends State<SleepPage> {
                                     ),
                                     elevation: 0,
                                     onPressed: () {
+                                      FlutterRingtonePlayer.stop();
                                       Navigator.pop(context);
                                     },
                                     child: Container(
