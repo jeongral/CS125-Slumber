@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,7 +7,9 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:geolocator/geolocator.dart';
 import 'sleep_page.dart';
+
 
 class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
@@ -16,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   Duration _timerDuration = new Duration(seconds: 1);
   bool isStarted;
 
+  Position _home;
   DateTime _sleepTime;
   DateTime _wakeTime;
   String _sSleepTime;
@@ -181,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                                         isStarted = true;
                                         Navigator.push(
                                           context,
-                                          MaterialPageRoute(builder: (context) => SleepPage(_sleepTime, _wakeTime))
+                                          MaterialPageRoute(builder: (context) => SleepPage(_sleepTime, _wakeTime, _home))
                                         );
                                       },
                                       child: Container(

@@ -1,14 +1,24 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import './ui/home_page.dart';
 import './ui/journey_page.dart';
 import './ui/profile_page.dart';
+import 'dart:ui';
+import 'dart:isolate';
 import './ui/test.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:background_locator/background_locator.dart';
+import 'package:background_locator/location_dto.dart';
+import 'package:background_locator/location_settings.dart';
+
 //import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 
 
-void main(){
+
+
+void main() async {
   try {//perhaps surround this with a if(sdkVersion)
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
         systemNavigationBarIconBrightness: Brightness.light));// ,systemNavigationBarColor: Color(0xFF2E2E2E)));
@@ -59,6 +69,11 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
 
   String javaSuccess = "Unknown";
 
+
+  ReceivePort port = ReceivePort();
+  dynamic currLocation;
+  var requiredPermissions = [PermissionGroup.locationAlways, PermissionGroup.sensors, PermissionGroup.microphone, PermissionGroup.storage, PermissionGroup.notification];
+
 //IGNORE
   // Future<Null> _createNotification() async{
   //   String _javaSuccess;
@@ -77,18 +92,49 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
   // }
 
   @override
-    void initState() {
-      _tabController = new TabController(length: 3, vsync: this);
-      super.initState();
-      one = HomePage();
-      two = Journey(); // probably don't need any of these params
-      three = MenuDashboardPage();
-      //three.createState();
-      //one.createState();
-      pages = [one,two,three];
-      currentPage = one;
+  void initState() {
+    _tabController = new TabController(length: 3, vsync: this);
+    super.initState();
+    one = HomePage();
+    two = Journey(); // probably don't need any of these params
+    three = MenuDashboardPage();
+    //three.createState();
+    //one.createState();
+    pages = [one,two,three];
+    currentPage = one;
+    if (!_permissionsGranted(requiredPermissions))
+      _askPermissions();
 
-    }
+    // Background Location Stream
+    IsolateNameServer.registerPortWithName(port.sendPort, 'LocatorIsolate');
+      port.listen((dynamic data) {
+        setState(() {
+          currLocation = data;
+        });
+        // TODO: Check if distance is greater than x from home then calc time
+      });
+      initPlatformState();
+      BackgroundLocator.registerLocationUpdate(callback,
+                settings: LocationSettings(
+                    notificationTitle: "Keeping Track of Your Location",
+                    notificationMsg: "Hey! :) We're tracking your location to help remind you to get home on time for a goodnight's sleep! You can edit this option in the settings.",
+                    wakeLockTime: 20,
+                    autoStop: false));
+  }
+  
+
+  Future<void> initPlatformState() async {
+    print("Initializing background location...");
+    await BackgroundLocator.initialize();
+    print("Done Initializing.");
+  }
+
+  static void callback(LocationDto locationDto) async {
+    print("Location in dart: ${locationDto.toString()}");
+    final SendPort send = IsolateNameServer.lookupPortByName('LocatorIsolate');
+    send?.send(locationDto);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,6 +188,21 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
       currentPage = pages[index];
     });
   }
+
+
+  void _askPermissions() {
+    PermissionHandler().requestPermissions(requiredPermissions);
+  }
+
+  bool _permissionsGranted(List<PermissionGroup> permissions)
+  {
+    for (var p in permissions) {
+      if (PermissionHandler().checkPermissionStatus(p) != PermissionStatus.granted)
+        return false;
+    }
+    return true;
+  }
+
 //IGNORE
 // Widget launchNotification(){
 //   return new Center(
@@ -152,3 +213,6 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
 //   );
 // }
 }
+
+
+

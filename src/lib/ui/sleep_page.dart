@@ -1,22 +1,26 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:sensors/sensors.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:slumber/snoring_analysis.dart';
 
 class SleepPage extends StatefulWidget {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  SleepPage(this._sleepTime, this._wakeTime);
-  _SleepPageState createState() => _SleepPageState(this._sleepTime, this._wakeTime);
+  Position _home;
+  SleepPage(this._sleepTime, this._wakeTime, this._home);
+  _SleepPageState createState() => _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 }
 
 class _SleepPageState extends State<SleepPage> {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  _SleepPageState(this._sleepTime, this._wakeTime);
+  Position _home;
+  _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 
   List<double> _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
@@ -25,6 +29,18 @@ class _SleepPageState extends State<SleepPage> {
   @override
   void initState() {
     super.initState();
+
+    // Add necessary permissions if not yet granted
+    if (!_permissionsGranted([PermissionGroup.microphone, PermissionGroup.storage, PermissionGroup.sensors, PermissionGroup.locationAlways]))
+        _askPermissions();
+
+    // Set coords slept at as home
+    //Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => _home = coords);
+    Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => 
+      setState(() {
+        _home = coords;
+      }));
+      
     _streamSubscriptions
         .add(gyroscopeEvents.listen((GyroscopeEvent event) {
           setState(() {
@@ -123,6 +139,15 @@ class _SleepPageState extends State<SleepPage> {
                                     )
                                   )
                                 ),
+                                Container(
+                                  child: Text(
+                                    'Home: $_home',
+                                    style: GoogleFonts.quicksand(
+                                      fontSize: 16.0,
+                                      color: Color.fromARGB(200, 255, 255, 255)
+                                    )
+                                  )
+                                ),
                                 RaisedButton(
                                     color: Color.fromARGB(50, 255, 255, 255),
                                     focusColor: Color.fromARGB(200, 255, 255, 255),
@@ -161,4 +186,18 @@ class _SleepPageState extends State<SleepPage> {
         )
     );
   }
+}
+
+
+void _askPermissions() {
+  PermissionHandler().requestPermissions([PermissionGroup.locationAlways, PermissionGroup.sensors, PermissionGroup.microphone, PermissionGroup.storage]);
+}
+
+bool _permissionsGranted(List<PermissionGroup> permissions)
+{
+  for (var p in permissions) {
+    if (PermissionHandler().checkPermissionStatus(p) != PermissionStatus.granted)
+      return false;
+  }
+  return true;
 }
