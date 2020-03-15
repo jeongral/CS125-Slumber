@@ -166,7 +166,7 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
 
                   Container(
                     height: 200,
-                    width: 500,
+                    width: 300,
                     child: PageView(
                       controller: pageController,
                       scrollDirection: Axis.horizontal,
@@ -187,7 +187,7 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                               itemCount: snapshot.data.length,
                               itemBuilder: (_,index){
                                 return Container(
-                                  height: 199,
+                                  height: 150,
                                   width: 300,
 
                                 child: Card(    
@@ -198,7 +198,7 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
 
                                     Text(snapshot.data[index].data["Title"], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                                     reccIcon(snapshot.data[index].data["Image"]),
-                                    Text(snapshot.data[index].data["Details"], style: TextStyle(fontSize: 14),),
+                                    Text(snapshot.data[index].data["Details"], style: TextStyle(fontSize: 12),),
                                   ]
                                   
                                 )));
