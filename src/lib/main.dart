@@ -9,13 +9,17 @@ import 'dart:ui';
 import 'dart:isolate';
 import './ui/test.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:background_locator/background_locator.dart';
-import 'package:background_locator/location_dto.dart';
-import 'package:background_locator/location_settings.dart';
+import 'location_access.dart' as location;
 
 //import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 
-
+import 'package:background_locator/background_locator.dart';
+import 'package:background_locator/location_dto.dart';
+import 'package:background_locator/location_settings.dart';
+import 'package:latlong/latlong.dart';
+import 'dart:core';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 
 void main() async {
@@ -28,6 +32,7 @@ void main() async {
   } on PlatformException catch (e) {
     print(e);
   }
+  
 
   runApp(new MaterialApp(
     home: new TabView(),
@@ -70,8 +75,6 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
   String javaSuccess = "Unknown";
 
 
-  ReceivePort port = ReceivePort();
-  dynamic currLocation;
   var requiredPermissions = [PermissionGroup.locationAlways, PermissionGroup.sensors, PermissionGroup.microphone, PermissionGroup.storage, PermissionGroup.notification];
 
 //IGNORE
@@ -102,38 +105,19 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
     //one.createState();
     pages = [one,two,three];
     currentPage = one;
+    
+    // Grab permissions
     if (!_permissionsGranted(requiredPermissions))
       _askPermissions();
 
     // Background Location Stream
-    IsolateNameServer.registerPortWithName(port.sendPort, 'LocatorIsolate');
-      port.listen((dynamic data) {
-        setState(() {
-          currLocation = data;
-        });
-        // TODO: Check if distance is greater than x from home then calc time
-      });
-      initPlatformState();
-      BackgroundLocator.registerLocationUpdate(callback,
-                settings: LocationSettings(
-                    notificationTitle: "Keeping Track of Your Location",
-                    notificationMsg: "Hey! :) We're tracking your location to help remind you to get home on time for a goodnight's sleep! You can edit this option in the settings.",
-                    wakeLockTime: 20,
-                    autoStop: false));
+    print("Testing");
+    initBackgroundLocation();
   }
   
+  
 
-  Future<void> initPlatformState() async {
-    print("Initializing background location...");
-    await BackgroundLocator.initialize();
-    print("Done Initializing.");
-  }
 
-  static void callback(LocationDto locationDto) async {
-    print("Location in dart: ${locationDto.toString()}");
-    final SendPort send = IsolateNameServer.lookupPortByName('LocatorIsolate');
-    send?.send(locationDto);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,4 +199,81 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
 }
 
 
+// Location Services
+
+
+int secSinceLastCheck = 895;
+ReceivePort port = ReceivePort();
+final Distance distance = new Distance();
+LatLng _home;
+
+
+void initBackgroundLocation() async {
+  print('Init.');
+  Timer.periodic(Duration(seconds:1), (timer) {
+    secSinceLastCheck++;
+  });
+
+  location.getHome().then((home) {
+    _home = home;
+  });
+
+  IsolateNameServer.registerPortWithName(port.sendPort, 'LocatorIsolate');
+    port.listen((dynamic data) {
+      LatLng current = new LatLng(data.latitude, data.longitude);
+
+
+      var dist = distance.as(LengthUnit.Mile,
+        new LatLng(current.latitude, current.longitude), new LatLng(_home.latitude, _home.longitude)); // Placeholder home
+
+      if (dist > 5 && secSinceLastCheck > 900) { // API call if > 5 miles and 15 minutes have passed
+        if (true) { // placeholder check if within an hour of sleep time
+          recommendHome(current.latitude, current.longitude, _home.latitude, _home.longitude);
+        }
+        secSinceLastCheck = 0;
+      }
+    });
+
+    initPlatformState();
+    BackgroundLocator.registerLocationUpdate(callback,
+              settings: LocationSettings(
+                accuracy: LocationAccuracy.BALANCED,
+                notificationTitle: "Keeping Track of Your Location",
+                notificationMsg: "Hey! :) We're tracking your location to help remind you to get home on time for a goodnight's sleep! You can edit this option in the settings.",
+                wakeLockTime: 20,
+                autoStop: false));
+}
+
+Future<void> initPlatformState() async {
+  print("Initializing background location...");
+  await BackgroundLocator.initialize();
+  print("Done Initializing.");
+}
+
+void callback(LocationDto locationDto) async {
+  print("Location in dart: ${locationDto.toString()}");
+  final SendPort send = IsolateNameServer.lookupPortByName('LocatorIsolate');
+  send?.send(locationDto);
+}
+
+void recommendHome(double currLat, double currLong, double homeLat, double homeLong) async {
+  final travelTime = await getTravelTime(currLat, currLong, homeLat, homeLong);
+  // TODO: Calculate time to leave by based off sleep time
+  print(travelTime['text']);
+  print(travelTime['value']);
+}
+
+Future<Map<String, dynamic>> getTravelTime(double currLat, double currLong, double homeLat, double homeLong) async {
+  String apiKey = "AIzaSyAT8XbD5lDqqu81HYfhCqoOWIUtdS4P7jk&fbclid=IwAR19cGDGZCMmpQtOWffy6pg7c9wXvZmy6kLo5U9kxHSbAsIpnza1wxWNrvs";
+  var client = new http.Client();
+    try {
+      final response = await client.get('https://maps.googleapis.com/maps/api/distancematrix/json?origins=$currLat,$currLong&destinations=$homeLat,$homeLong&key=$apiKey');
+      var data = json.decode(response.body);
+      print(data);
+      return data['rows'][0]['elements'][0]['duration'];
+    }
+    finally {
+      client.close();
+    }
+}
 

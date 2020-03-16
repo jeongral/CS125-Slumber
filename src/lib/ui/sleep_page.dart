@@ -7,11 +7,15 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slumber/snoring_analysis.dart';
 import 'alarm_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:latlong/latlong.dart';
+
+
 
 class SleepPage extends StatefulWidget {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  Position _home;
+  LatLng _home;
   SleepPage(this._sleepTime, this._wakeTime, this._home);
   _SleepPageState createState() => _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 }
@@ -19,7 +23,7 @@ class SleepPage extends StatefulWidget {
 class _SleepPageState extends State<SleepPage> {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  Position _home;
+  LatLng _home;
   Duration _difference;
   _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 
@@ -35,13 +39,13 @@ class _SleepPageState extends State<SleepPage> {
     // Add necessary permissions if not yet granted
     if (!_permissionsGranted([PermissionGroup.microphone, PermissionGroup.storage, PermissionGroup.sensors, PermissionGroup.locationAlways]))
         _askPermissions();
-
     // Set coords slept at as home
-    //Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => _home = coords);
-    Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => 
-      setState(() {
-        _home = coords;
-      }));
+    Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) {
+        setHome(new LatLng(coords.latitude, coords.longitude));
+        getHome().then((home) {
+          _home = home;
+        });
+      });
       
     _difference = _wakeTime.difference(_sleepTime);
     Timer(Duration(seconds: _difference.inSeconds), () {
@@ -117,7 +121,7 @@ class _SleepPageState extends State<SleepPage> {
                                 ),
                                 Container(
                                   child: Text(
-                                    'Home: $_home',
+                                    'Home: ${_home}',
                                     style: GoogleFonts.quicksand(
                                       fontSize: 16.0,
                                       color: Color.fromARGB(200, 255, 255, 255)
@@ -176,4 +180,30 @@ bool _permissionsGranted(List<PermissionGroup> permissions)
       return false;
   }
   return true;
+}
+
+Future<LatLng> getHome() async {
+    print("Getting Home.");
+    var firestore = Firestore.instance;
+    try {
+      var home = await firestore.collection("Location").document("Home").get();
+      return new LatLng(home['latitude'], home['longitude']);
+    }
+    catch(e) {
+      return null;
+    }
+  }
+
+void setHome(LatLng home) async {
+  print ("Setting Home.");
+  var firestore = Firestore.instance;
+  try {
+    firestore.collection("Location").document("Home").updateData({
+      'latitude' : home.latitude,
+      'longitude' : home.longitude
+    });
+  }
+  catch(e) {
+    print(e);
+  }
 }
