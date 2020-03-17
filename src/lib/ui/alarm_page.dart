@@ -9,6 +9,7 @@ class AlarmPage extends StatefulWidget {
 
 class _AlarmPageState extends State<AlarmPage> {
   String s;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +32,152 @@ class _AlarmPageState extends State<AlarmPage> {
   void dispose() {
     super.dispose();
   }
+
+  void _showDialog() {
+    String _mood;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            "Good $s How are you feeling?",
+            style: GoogleFonts.quicksand(
+              textStyle: TextStyle(
+                color: Color(0xff64B6FF),
+              )
+            )
+          ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                height: 70,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.sentiment_very_satisfied),
+                      color: Color(0xff64B6FF),
+                      onPressed: () {
+                        _mood = "Happy";
+                      }
+                    ),
+                    Text(
+                      "Happy",
+                      style: GoogleFonts.quicksand(
+                        color: Color(0xff64B6FF)
+                      )
+                    )
+                  ]
+                )
+              ),
+              Container(
+                  height: 70,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.sentiment_satisfied),
+                            color: Color(0xff64B6FF),
+                            onPressed: () {
+                              _mood = "Good";
+                            }
+                        ),
+                        Text(
+                            "Good",
+                            style: GoogleFonts.quicksand(
+                                color: Color(0xff64B6FF)
+                            )
+                        )
+                      ]
+                  )
+              ),
+              Container(
+                  height: 70,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.sentiment_neutral),
+                            color: Color(0xff64B6FF),
+                            onPressed: () {
+                              _mood = "Normal";
+                            }
+                        ),
+                        Text(
+                            "Normal",
+                            style: GoogleFonts.quicksand(
+                                color: Color(0xff64B6FF)
+                            )
+                        )
+                      ]
+                  )
+              ),
+              Container(
+                  height: 70,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.sentiment_dissatisfied),
+                            color: Color(0xff64B6FF),
+                            onPressed: () {
+                              _mood = "Bad";
+                            }
+                        ),
+                        Text(
+                            "Bad",
+                            style: GoogleFonts.quicksand(
+                                color: Color(0xff64B6FF)
+                            )
+                        )
+                      ]
+                  )
+              ),
+              Container(
+                  height: 70,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.sentiment_very_dissatisfied),
+                            color: Color(0xff64B6FF),
+                            onPressed: () {
+                              _mood = "Terrible";
+                            }
+                        ),
+                        Text(
+                            "Terrible",
+                            style: GoogleFonts.quicksand(
+                                color: Color(0xff64B6FF)
+                            )
+                        )
+                      ]
+                  )
+              )
+            ]
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(
+                "Close",
+                style: GoogleFonts.quicksand(
+                  textStyle: TextStyle(
+                    color: Color(0xff64B6FF)
+                  )
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }
+            )
+          ]
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +234,7 @@ class _AlarmPageState extends State<AlarmPage> {
                                     onPressed: () {
                                       FlutterRingtonePlayer.stop();
                                       Navigator.pop(context);
+                                      _showDialog();
                                     },
                                     child: Container(
                                         width: 200.0,

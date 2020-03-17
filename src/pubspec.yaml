@@ -41,6 +41,7 @@ dependencies:
   permission_handler: ^4.4.0+hotfix.1
   background_locator: ^1.0.0+1
   geolocator: ^5.3.0
+  numberpicker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
