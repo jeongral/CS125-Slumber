@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors/sensors.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:slumber/snoring_analysis.dart';
 import 'alarm_page.dart';
 
@@ -23,10 +24,15 @@ class _SleepPageState extends State<SleepPage> {
   Duration _difference;
   _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 
+  bool _isSleeping = true;
+  bool _isInterrupted = false;
+
   List<double> _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
       <StreamSubscription<dynamic>>[];
-  List<Map<DateTime, List<double>>> _gyroscope = [];
+  List<Map<String, List<double>>> _gyroscope = [];
+
+  DateFormat formatter = DateFormat('MM-dd-yyyy');
 
   @override
   void initState() {
@@ -45,25 +51,35 @@ class _SleepPageState extends State<SleepPage> {
       
     _difference = _wakeTime.difference(_sleepTime);
     Timer(Duration(seconds: _difference.inSeconds), () {
-      Navigator.pop(context);
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AlarmPage())
-      );
+      if (!_isInterrupted) {
+        _addToFirebase();
+        Navigator.pop(context);
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AlarmPage())
+        );
+      }
     });
-
     _streamSubscriptions
         .add(gyroscopeEvents.listen((GyroscopeEvent event) {
           setState(() {
             _gyroscopeValues = <double>[event.x, event.y, event.z];
           });
-          _gyroscope.add({DateTime.now(): _gyroscopeValues});
+          _gyroscope.add({DateTime.now().toString(): _gyroscopeValues});
     }));
+    Timer.periodic(Duration(seconds: 1), (Timer t) {
+      if (_isSleeping) {
+        _gyroscope.add({DateTime.now().toString(): _gyroscopeValues});
+      }
+      else
+        t.cancel();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
+    _isSleeping = false;
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
       subscription.cancel();
     }
@@ -71,6 +87,16 @@ class _SleepPageState extends State<SleepPage> {
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat.jm().format(dateTime);
+  }
+
+  void _addToFirebase() async {
+    Firestore.instance.collection("Journey").document(formatter.format(_sleepTime)).setData({
+      'date': formatter.format(_sleepTime),
+      'sleepTime': _sleepTime.toString(),
+      'wakeTime': _wakeTime.toString(),
+      'sleepLength': _wakeTime.difference(_sleepTime).toString(),
+      'gyroscopeValues': _gyroscope,
+    });
   }
 
   @override
@@ -135,6 +161,7 @@ class _SleepPageState extends State<SleepPage> {
                                     ),
                                     elevation: 0,
                                     onPressed: () {
+                                      _isInterrupted = true;
                                       Navigator.pop(context);
                                     },
                                     child: Container(
