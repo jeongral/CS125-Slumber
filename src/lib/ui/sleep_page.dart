@@ -5,10 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors/sensors.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:slumber/snoring_analysis.dart';
+import 'package:slumber/snoring_analysis.dart' as analyzer;
 import 'alarm_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong/latlong.dart';
+import 'package:mic_stream/mic_stream.dart';
+import 'package:mfcc/mfcc.dart';
+
 
 
 
@@ -26,6 +29,10 @@ class _SleepPageState extends State<SleepPage> {
   LatLng _home;
   Duration _difference;
   _SleepPageState(this._sleepTime, this._wakeTime, this._home);
+
+  List<int> _micstreamValues = [];
+  List<List<List<double>>> mfccList = [];
+  int snoringLength = 0;
 
   List<double> _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
@@ -63,7 +70,36 @@ class _SleepPageState extends State<SleepPage> {
           });
           _gyroscope.add({DateTime.now(): _gyroscopeValues});
     }));
+
+    // Load snoring analyzer
+
+    // Create audio stream
+    int sampleRate = 16000;
+    Stream<List<int>> micStream = microphone(sampleRate: sampleRate, audioFormat: AudioFormat.ENCODING_PCM_16BIT);
+    _streamSubscriptions
+        .add(micStream.listen((samples) { // Each sample list has 3584 samples
+          //print(samples);
+          _micstreamValues.addAll(samples);
+          if (_micstreamValues.length >= sampleRate) { // 1 second
+            // Do something
+            print("Processing Audio...");
+            var mfcc = analyzer.genMfcc(_micstreamValues.getRange(0, sampleRate).toList().map((i) => i.toDouble()).toList(), sampleRate);
+            mfccList.add(mfcc);
+            _micstreamValues.removeRange(0, sampleRate);
+            if (mfccList.length >= 1) {
+              analyzer.detectSnoring(mfccList).then((result) {
+                if (result == 1)
+                  snoringLength++;
+              });
+              print("Snoring Length $snoringLength");
+              mfccList.clear();
+            }
+          }
+        }));
   }
+
+  
+
 
   @override
   void dispose() {
@@ -71,6 +107,7 @@ class _SleepPageState extends State<SleepPage> {
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
       subscription.cancel();
     }
+    analyzer.updateSnoringLength(snoringLength);
   }
 
   String _formatDateTime(DateTime dateTime) {
