@@ -5,7 +5,7 @@ class Profile extends StatelessWidget{
   Widget build(BuildContext context) {
     // TODO: implement build
     return new Scaffold(
-      backgroundColor: Color(0xFF1d1d1e),
+      backgroundColor: Color(0xff64B6FF),
       appBar: buildAppBar(),
       body: new Center(
         child: Column(
@@ -61,7 +61,7 @@ static Image getImg(String str) {
                 
                 child: Container(   
                 decoration: new BoxDecoration(
-                 color: Color(0xFF252527),
+                 color: Color(0xff64B6FF),
                  boxShadow: [
                    BoxShadow(
             color: Colors.black,

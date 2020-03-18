@@ -56,21 +56,21 @@ class _SleepPageState extends State<SleepPage> {
         Navigator.pop(context);
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AlarmPage())
+            MaterialPageRoute(builder: (context) => AlarmPage(_sleepTime))
         );
       }
     });
+
     _streamSubscriptions
         .add(gyroscopeEvents.listen((GyroscopeEvent event) {
           setState(() {
             _gyroscopeValues = <double>[event.x, event.y, event.z];
           });
-          _gyroscope.add({DateTime.now().toString(): _gyroscopeValues});
     }));
+
     Timer.periodic(Duration(seconds: 1), (Timer t) {
-      if (_isSleeping) {
+      if (_isSleeping)
         _gyroscope.add({DateTime.now().toString(): _gyroscopeValues});
-      }
       else
         t.cancel();
     });
@@ -114,7 +114,7 @@ class _SleepPageState extends State<SleepPage> {
                               gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [Color(0xff89216B), Color(0xffDA4453)]
+                                  colors: [Color(0xff141E30), Color(0xff243b55)]
                               )
                           ),
                           child: Column(

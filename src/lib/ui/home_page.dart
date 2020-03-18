@@ -8,7 +8,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:geolocator/geolocator.dart';
 import 'sleep_page.dart';
 
-
 class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
