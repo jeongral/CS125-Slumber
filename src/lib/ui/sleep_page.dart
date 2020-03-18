@@ -56,7 +56,7 @@ class _SleepPageState extends State<SleepPage> {
         Navigator.pop(context);
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AlarmPage())
+            MaterialPageRoute(builder: (context) => AlarmPage(_sleepTime))
         );
       }
     });

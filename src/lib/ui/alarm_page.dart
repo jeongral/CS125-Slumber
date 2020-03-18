@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_page.dart';
 
 class AlarmPage extends StatefulWidget {
-  _AlarmPageState createState() => _AlarmPageState();
+  DateTime _sleepTime;
+  AlarmPage(this._sleepTime);
+  _AlarmPageState createState() => _AlarmPageState(this._sleepTime);
 }
 
 class _AlarmPageState extends State<AlarmPage> {
+  DateTime _sleepTime;
   String s;
+
+  DateFormat formatter = DateFormat('MM-dd-yyyy');
+
+  _AlarmPageState(this._sleepTime);
 
   @override
   void initState() {
@@ -34,14 +43,14 @@ class _AlarmPageState extends State<AlarmPage> {
   }
 
   void _showDialog() {
-    String _mood;
+    String _mood = 'Normal';
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "Good $s How are you feeling?",
+            'Good $s How are you feeling?',
             style: GoogleFonts.quicksand(
               textStyle: TextStyle(
                 color: Color(0xff64B6FF),
@@ -60,11 +69,11 @@ class _AlarmPageState extends State<AlarmPage> {
                       icon: Icon(Icons.sentiment_very_satisfied),
                       color: Color(0xff64B6FF),
                       onPressed: () {
-                        _mood = "Happy";
+                        _mood = 'Happy';
                       }
                     ),
                     Text(
-                      "Happy",
+                      'Happy',
                       style: GoogleFonts.quicksand(
                         color: Color(0xff64B6FF)
                       )
@@ -81,11 +90,11 @@ class _AlarmPageState extends State<AlarmPage> {
                             icon: Icon(Icons.sentiment_satisfied),
                             color: Color(0xff64B6FF),
                             onPressed: () {
-                              _mood = "Good";
+                              _mood = 'Good';
                             }
                         ),
                         Text(
-                            "Good",
+                            'Good',
                             style: GoogleFonts.quicksand(
                                 color: Color(0xff64B6FF)
                             )
@@ -102,11 +111,11 @@ class _AlarmPageState extends State<AlarmPage> {
                             icon: Icon(Icons.sentiment_neutral),
                             color: Color(0xff64B6FF),
                             onPressed: () {
-                              _mood = "Normal";
+                              _mood = 'Normal';
                             }
                         ),
                         Text(
-                            "Normal",
+                            'Normal',
                             style: GoogleFonts.quicksand(
                                 color: Color(0xff64B6FF)
                             )
@@ -123,11 +132,11 @@ class _AlarmPageState extends State<AlarmPage> {
                             icon: Icon(Icons.sentiment_dissatisfied),
                             color: Color(0xff64B6FF),
                             onPressed: () {
-                              _mood = "Bad";
+                              _mood = 'Bad';
                             }
                         ),
                         Text(
-                            "Bad",
+                            'Bad',
                             style: GoogleFonts.quicksand(
                                 color: Color(0xff64B6FF)
                             )
@@ -144,11 +153,11 @@ class _AlarmPageState extends State<AlarmPage> {
                             icon: Icon(Icons.sentiment_very_dissatisfied),
                             color: Color(0xff64B6FF),
                             onPressed: () {
-                              _mood = "Terrible";
+                              _mood = 'Terrible';
                             }
                         ),
                         Text(
-                            "Terrible",
+                            'Terrible',
                             style: GoogleFonts.quicksand(
                                 color: Color(0xff64B6FF)
                             )
@@ -161,7 +170,7 @@ class _AlarmPageState extends State<AlarmPage> {
           actions: <Widget>[
             FlatButton(
               child: Text(
-                "Close",
+                'Close',
                 style: GoogleFonts.quicksand(
                   textStyle: TextStyle(
                     color: Color(0xff64B6FF)
@@ -169,6 +178,9 @@ class _AlarmPageState extends State<AlarmPage> {
                 ),
               ),
               onPressed: () {
+                Firestore.instance.collection('Journey').document(formatter.format(_sleepTime)).updateData({
+                  'mood': _mood
+                });
                 Navigator.of(context).pop();
               }
             )
@@ -200,7 +212,7 @@ class _AlarmPageState extends State<AlarmPage> {
                               children: <Widget>[
                                 Container(
                                     child: Text(
-                                        "Good",
+                                        'Good',
                                         style: GoogleFonts.quicksand(
                                             textStyle: TextStyle(
                                                 fontSize: 60.0,

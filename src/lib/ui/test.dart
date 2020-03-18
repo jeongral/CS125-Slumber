@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-
-final Color backgroundColor = Color(0xFF161616);
+import 'package:google_fonts/google_fonts.dart';
+import 'info_page.dart';
 
 class MenuDashboardPage extends StatefulWidget {
   @override
@@ -44,13 +43,21 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
     screenWidth = size.width;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Stack(
-        children: <Widget>[
-          menu(context),
-          dashboard(context),
-        ],
-      ),
+      body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xff374ABE), Color(0xff64B6FF)]
+            )
+        ),
+        child: Stack(
+          children: <Widget>[
+            menu(context),
+            dashboard(context),
+          ],
+        ),
+      )
     );
   }
 
@@ -68,19 +75,28 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text("\t\t\tJohn Doe", style: TextStyle(color: Colors.grey, fontSize: 22)),
-                profilePicture("https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTE1ODA0OTcxOTA3NTgxNDUz/hugh-jackman-16599916-1-402.jpg"),
-                
-                SizedBox(height: 60),
-                Text("Data", style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 15),
-                Text("Notifications", style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 15),
-                Text("About", style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 15),
-                Text("Settings", style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 15),
-                Text("Logout", style: TextStyle(color: Colors.white, fontSize: 22)),
+                Text("John Doe", style: GoogleFonts.quicksand(
+                  textStyle: TextStyle(
+                    color: Color.fromARGB(200, 255, 255, 255),
+                    fontSize: 36.0,
+                    fontWeight: FontWeight.bold
+                  )
+                )),
+                SizedBox(height: 30),
+                FlatButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => InfoPage())
+                    );
+                  },
+                  child: Text("Change Profile", style: GoogleFonts.quicksand(
+                      textStyle: TextStyle(
+                          color: Color.fromARGB(200, 255, 255, 255),
+                          fontSize: 24.0
+                      )
+                  )),
+                )
               ],
             ),
           ),
@@ -128,13 +144,13 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
         child: Material(
           animationDuration: duration,
           borderRadius: BorderRadius.all(Radius.circular(40)),
-          elevation: 8,
-          color: backgroundColor,
+          elevation: 0,
+          color: Colors.transparent,
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             physics: ClampingScrollPhysics(),
             child: Container(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 48),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 25),
               child: ListView(
                 controller: scrollController,
                 shrinkWrap: true,
@@ -158,14 +174,20 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                           });
                         },
                       ),
-                      Text("Reccomendations", style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold)),
-                      Icon(Icons.settings, color: Colors.white),
+                      Text("Reccomendations", style: GoogleFonts.quicksand(
+                        textStyle: TextStyle(
+                          fontSize: 24.0,
+                          color: Color.fromARGB(200, 255, 255, 255),
+                          fontWeight: FontWeight.bold
+                        )
+                      )),
+                      Icon(Icons.settings, color: Color.fromARGB(200, 255, 255, 255))
                     ],
                   ),
-                  SizedBox(height: 50),
-
+                  SizedBox(height: 10),
                   Container(
-                    height: 200,
+                    alignment: Alignment.center,
+                    height: 250,
                     width: 300,
                     child: PageView(
                       controller: pageController,
@@ -187,18 +209,18 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                               itemCount: snapshot.data.length,
                               itemBuilder: (_,index){
                                 return Container(
-                                  height: 150,
+                                  height: 250,
                                   width: 300,
 
                                 child: Card(    
-                                  color: Color(0xFF1d1d1e),
+                                  color: Colors.transparent,
+                                  elevation: 0,
                                   child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
-
-                                    Text(snapshot.data[index].data["Title"], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                                    Text(snapshot.data[index].data["Title"], style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 24, color: Color.fromARGB(200, 255, 255, 255), fontWeight: FontWeight.bold))),
                                     reccIcon(snapshot.data[index].data["Image"]),
-                                    Text(snapshot.data[index].data["Details"], style: TextStyle(fontSize: 12),),
+                                    Text(snapshot.data[index].data["Details"], textAlign: TextAlign.center,style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 18, color: Color.fromARGB(200, 255, 255, 255)))),
                                   ]
                                   
                                 )));
@@ -216,8 +238,8 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
 
                     
                   
-                  SizedBox(height: 20),
-                  Text("Settings", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),),
+                  SizedBox(height: 10),
+                  Text("Settings", style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 24, color: Color.fromARGB(200, 255, 255, 255), fontWeight: FontWeight.bold))),
                   SizedBox(height: 10),
 
                   // ListView.separated(
@@ -245,8 +267,8 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                             itemCount: snapshot.data.length,
                             itemBuilder: (_,index){
                               return ListTile(    
-                                title: Text(snapshot.data[index].data["Title"], style: TextStyle(fontSize: 18),),
-                                trailing: Text(snapshot.data[index].data["Value"], style: TextStyle(fontSize: 18, color: Colors.grey))
+                                title: Text(snapshot.data[index].data["Title"], style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 18, color: Color.fromARGB(200, 255, 255, 255), fontWeight: FontWeight.bold))),
+                                trailing: Text(snapshot.data[index].data["Value"], style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 18, color: Color.fromARGB(200, 255, 255, 255))))
                                 );
                             }
                             );

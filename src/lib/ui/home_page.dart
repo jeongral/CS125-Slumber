@@ -7,8 +7,6 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:geolocator/geolocator.dart';
 import 'sleep_page.dart';
-import 'info_page.dart';
-
 
 class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
@@ -163,31 +161,6 @@ class _HomePageState extends State<HomePage> {
                                       child: Container(
                                           child: Text(
                                               'Change Time',
-                                              style: GoogleFonts.quicksand(
-                                                  textStyle: TextStyle(
-                                                      fontSize: 18.0,
-                                                      color: Color.fromARGB(200, 255, 255, 255)
-                                                  )
-                                              )
-                                          )
-                                      )
-                                  ),
-                                  RaisedButton(
-                                      color: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      splashColor: Colors.transparent,
-                                      elevation: 0,
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => InfoPage())
-                                        );
-                                      },
-                                      child: Container(
-                                          child: Text(
-                                              'Proceed to info page',
                                               style: GoogleFonts.quicksand(
                                                   textStyle: TextStyle(
                                                       fontSize: 18.0,

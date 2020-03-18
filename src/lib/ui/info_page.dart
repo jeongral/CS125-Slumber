@@ -5,6 +5,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InfoPage extends StatefulWidget {
   _InfoPageState createState() => _InfoPageState();
@@ -38,8 +39,10 @@ class _InfoPageState extends State<InfoPage> {
       _genderRadioValue = value;
       switch (_genderRadioValue) {
         case 0:
+          _gender = "Male";
           break;
         case 1:
+          _gender = "Female";
           break;
       }
     });
@@ -50,16 +53,55 @@ class _InfoPageState extends State<InfoPage> {
       _activityRadioValue = value;
       switch (_activityRadioValue) {
         case 0:
+          _activityLevel = "Very Low";
+          break;
           break;
         case 1:
+          _activityLevel = "Low";
           break;
         case 2:
+          _activityLevel = "Average";
           break;
         case 3:
+          _activityLevel = "High";
           break;
         case 4:
+          _activityLevel = "Very High";
           break;
       }
+    });
+  }
+
+  void _addToFirebase() async {
+    Firestore.instance.collection('UserSettings').document('Age').setData({
+      'Title': 'Age',
+      'Order': 1,
+      'Value': '$_age'
+    });
+    Firestore.instance.collection('UserSettings').document('Activity Level').setData({
+      'Title': 'Activity Level',
+      'Order': 3,
+      'Value': _activityLevel
+    });
+    Firestore.instance.collection('UserSettings').document('Gender').setData({
+      'Title': 'Gender',
+      'Order': 2,
+      'Value': _gender
+    });
+    Firestore.instance.collection('UserSettings').document('Sleep Time').setData({
+      'Title': 'Sleep Time',
+      'Order': 4,
+      'Value': _sleepTime
+    });
+    Firestore.instance.collection('UserSettings').document('Ideal Hours').setData({
+      'Title': 'Ideal Hours',
+      'Order': 6,
+      'Value': '$_idealHours'
+    });
+    Firestore.instance.collection('UserSettings').document('Wake Time').setData({
+      'Title': 'Wake Time',
+      'Order': 5,
+      'Value': _wakeTime
     });
   }
 
@@ -539,7 +581,7 @@ class _InfoPageState extends State<InfoPage> {
                                     ),
                                     elevation: 0,
                                     onPressed: () {
-
+                                      _addToFirebase();
                                       Navigator.pop(context);
                                     },
                                     child: Container(
