@@ -7,6 +7,7 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:geolocator/geolocator.dart';
 import 'sleep_page.dart';
+import 'package:latlong/latlong.dart';
 
 class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   bool _isStarted = false;
   bool _isVisible = false;
 
-  Position _home;
+  LatLng _home;
   DateTime _sleepTime;
   DateTime _wakeTime;
   String _sSleepTime;

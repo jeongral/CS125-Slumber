@@ -35,14 +35,20 @@ dependencies:
   flutter_ringtone_player: ^2.0.0
   percent_indicator: ^1.0.10
   fit_kit: ^1.1.1
-  tflite: ^1.0.5
   mfcc: ^1.0.1
-  flutter_audio_recorder: ^0.5.5
   permission_handler: ^4.4.0+hotfix.1
   background_locator: ^1.0.0+1
   geolocator: ^5.3.0
+  latlong: ^0.6.1
+  http: ^0.12.0+4
+  flutter_local_notifications: ^1.2.2
+  rxdart: ^0.23.1
+  mic_stream:
+    git:
+      url: https://github.com/zvikarp/mic_stream
   numberpicker: ^1.2.0
   firebase_database: any
+
 
 dev_dependencies:
   flutter_test:

@@ -5,14 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sensors/sensors.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:slumber/snoring_analysis.dart';
+import 'package:slumber/snoring_analysis.dart' as analyzer;
 import 'alarm_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:latlong/latlong.dart';
+import 'package:mic_stream/mic_stream.dart';
+import 'package:mfcc/mfcc.dart';
+
+
+
 
 class SleepPage extends StatefulWidget {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  Position _home;
+  LatLng _home;
   SleepPage(this._sleepTime, this._wakeTime, this._home);
   _SleepPageState createState() => _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 }
@@ -20,12 +26,18 @@ class SleepPage extends StatefulWidget {
 class _SleepPageState extends State<SleepPage> {
   DateTime _sleepTime;
   DateTime _wakeTime;
-  Position _home;
+  LatLng _home;
   Duration _difference;
   _SleepPageState(this._sleepTime, this._wakeTime, this._home);
 
+
+  List<int> _micstreamValues = [];
+  List<List<List<double>>> mfccList = [];
+  int snoringLength = 0;
+  
   bool _isSleeping = true;
   bool _isInterrupted = false;
+
 
   List<double> _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
@@ -41,13 +53,13 @@ class _SleepPageState extends State<SleepPage> {
     // Add necessary permissions if not yet granted
     if (!_permissionsGranted([PermissionGroup.microphone, PermissionGroup.storage, PermissionGroup.sensors, PermissionGroup.locationAlways]))
         _askPermissions();
-
     // Set coords slept at as home
-    //Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => _home = coords);
-    Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) => 
-      setState(() {
-        _home = coords;
-      }));
+    Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((coords) {
+        setHome(new LatLng(coords.latitude, coords.longitude));
+        getHome().then((home) {
+          _home = home;
+        });
+      });
       
     _difference = _wakeTime.difference(_sleepTime);
     Timer(Duration(seconds: _difference.inSeconds), () {
@@ -68,6 +80,32 @@ class _SleepPageState extends State<SleepPage> {
           });
     }));
 
+
+    // Load snoring analyzer
+
+    // Create audio stream
+    int sampleRate = 16000;
+    Stream<List<int>> micStream = microphone(sampleRate: sampleRate, audioFormat: AudioFormat.ENCODING_PCM_16BIT);
+    _streamSubscriptions
+        .add(micStream.listen((samples) { // Each sample list has 3584 samples
+          //print(samples);
+          _micstreamValues.addAll(samples);
+          if (_micstreamValues.length >= sampleRate) { // 1 second
+            // Do something
+            print("Processing Audio...");
+            var mfcc = analyzer.genMfcc(_micstreamValues.getRange(0, sampleRate).toList().map((i) => i.toDouble()).toList(), sampleRate);
+            mfccList.add(mfcc);
+            _micstreamValues.removeRange(0, sampleRate);
+            if (mfccList.length >= 1) {
+              analyzer.detectSnoring(mfccList).then((result) {
+                if (result == 1)
+                  snoringLength++;
+              });
+              print("Snoring Length $snoringLength");
+              mfccList.clear();
+            }
+          }
+        }));
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       if (_isSleeping)
         _gyroscope.add({DateTime.now().toString(): _gyroscopeValues});
@@ -76,6 +114,9 @@ class _SleepPageState extends State<SleepPage> {
     });
   }
 
+  
+
+
   @override
   void dispose() {
     super.dispose();
@@ -83,6 +124,7 @@ class _SleepPageState extends State<SleepPage> {
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
       subscription.cancel();
     }
+    analyzer.updateSnoringLength(snoringLength);
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -143,7 +185,7 @@ class _SleepPageState extends State<SleepPage> {
                                 ),
                                 Container(
                                   child: Text(
-                                    'Home: $_home',
+                                    'Home: ${_home}',
                                     style: GoogleFonts.quicksand(
                                       fontSize: 16.0,
                                       color: Color.fromARGB(200, 255, 255, 255)
@@ -203,4 +245,30 @@ bool _permissionsGranted(List<PermissionGroup> permissions)
       return false;
   }
   return true;
+}
+
+Future<LatLng> getHome() async {
+    print("Getting Home.");
+    var firestore = Firestore.instance;
+    try {
+      var home = await firestore.collection("Location").document("Home").get();
+      return new LatLng(home['latitude'], home['longitude']);
+    }
+    catch(e) {
+      return null;
+    }
+  }
+
+void setHome(LatLng home) async {
+  print ("Setting Home.");
+  var firestore = Firestore.instance;
+  try {
+    firestore.collection("Location").document("Home").updateData({
+      'latitude' : home.latitude,
+      'longitude' : home.longitude
+    });
+  }
+  catch(e) {
+    print(e);
+  }
 }
