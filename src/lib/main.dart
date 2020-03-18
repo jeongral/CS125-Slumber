@@ -173,7 +173,6 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
 
     // Background Location Stream
     initBackgroundLocation();
-    showNotification("test");
   }
   
   
