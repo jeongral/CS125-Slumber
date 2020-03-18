@@ -286,7 +286,7 @@ void initBackgroundLocation() async {
       var dist = distance.as(LengthUnit.Mile,
         new LatLng(current.latitude, current.longitude), new LatLng(_home.latitude, _home.longitude)); // Placeholder home
 
-      if (dist > 5 && secSinceLastCheck > 900) { // API call if > 5 miles and 15 minutes (900 seconds) have passed
+      if (dist > 5 && secSinceLastCheck > 10) { // API call if > 5 miles and 15 minutes (900 seconds) have passed
         if (true) { // placeholder check if within an hour of sleep time
           recommendHome(current.latitude, current.longitude, _home.latitude, _home.longitude);
         }
@@ -305,6 +305,7 @@ void initBackgroundLocation() async {
 }
 
 Future<void> initPlatformState() async {
+  
   print("Initializing background location...");
   await BackgroundLocator.initialize();
   print("Done Initializing.");
@@ -351,7 +352,7 @@ Future<void> showNotification(String message) async {
         payload: 'item x');
   }
 
-void recommendHome(double currLat, double currLong, double homeLat, double homeLong) async {
+Future<void> recommendHome(double currLat, double currLong, double homeLat, double homeLong) async {
   print('Recommending to go home.');
   await location.getTravelTime(currLat, currLong, homeLat, homeLong).then((travelTime) {
     String timeToLeaveMsg = "It will take you ${travelTime['text']} to get home. Plan accordingly to sleep on time!";
