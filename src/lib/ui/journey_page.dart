@@ -27,6 +27,14 @@ class _JourneyState extends State<Journey> {
   List<int> _sleepDuration = [];
   List<SleepSeries> _sleepData = [];
 
+//  ScrollController scrollController;
+//
+//  @override
+//  void initState() {
+//    super.initState();
+//    scrollController = ScrollController();
+//  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -50,7 +58,7 @@ class _JourneyState extends State<Journey> {
                                 padding: EdgeInsets.symmetric(vertical: 10.0),
                               ),
                               Container(
-                                  padding: EdgeInsets.only(left: 10.0, right: 290.0),
+                                  padding: EdgeInsets.only(left: 10.0, right: 260.0),
                                   child: Text(
                                       'Hours of Sleep',
                                       style: GoogleFonts.quicksand(
@@ -67,18 +75,18 @@ class _JourneyState extends State<Journey> {
                                   child: sleepGraph(context),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(vertical: 40.0),
-                                color: Colors.white, height: 1, width: 500,
+//                                padding: EdgeInsets.symmetric(vertical: 40.0),
+                                color: Colors.white, height: 0.5, width: 500,
                               ),
                               Container(
                                 child: sleepScore(context),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(vertical: 30.0),
-                                color: Colors.white, height: 1, width: 500,
+//                                padding: EdgeInsets.symmetric(vertical: 30.0),
+                                color: Colors.white, height: 0.5, width: 500,
                               ),
                               Container(
-                                  padding: EdgeInsets.only(left: 10.0, right: 300.0, top: 5),
+                                  padding: EdgeInsets.only(left: 10.0, right: 260.0),
                                   child: Text(
                                       'Last Night:',
                                       style: GoogleFonts.oswald(
@@ -146,10 +154,9 @@ class _JourneyState extends State<Journey> {
 
 
               return Container(
-                  height: 210,
-
+//                  height: 170.0,
+                  height: MediaQuery.of(context).size.height*3.3/10,
                   child: Card(
-
                         child: charts.BarChart(
                             series,
                             animate: true,
@@ -226,8 +233,9 @@ class _JourneyState extends State<Journey> {
               int consistency = score.round();
 
               return Container(
+                  height: MediaQuery.of(context).size.height/5,
                   child: CircularPercentIndicator(
-                      radius: 100.0,
+                      radius: 85.0,
                       percent: consistency/100.round(),
                       lineWidth: 10.0,
                       circularStrokeCap: CircularStrokeCap.round,
@@ -257,6 +265,7 @@ class _JourneyState extends State<Journey> {
 
   Widget previousNightSummary(context){
     return new Container(
+
       child: FutureBuilder(
           future: getSleepData(),
           builder: (_,snapshot){
@@ -331,7 +340,8 @@ class _JourneyState extends State<Journey> {
               ];
 
               return Container(
-                height: 200.0,
+//                 height: 150.0,
+                height: MediaQuery.of(context).size.height*2.5/10,
                 child: ListView.builder(
                     itemCount: summary.length,
                     itemBuilder: (context, index){
@@ -348,6 +358,7 @@ class _JourneyState extends State<Journey> {
             }
           }
       ),
+
     );
   }
 }
