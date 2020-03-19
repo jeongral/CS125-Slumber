@@ -206,7 +206,7 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                               controller: pageController,
                               scrollDirection: Axis.horizontal,
                               
-                              itemCount: snapshot.data.length,
+                              itemCount: 3,
                               itemBuilder: (_,index){
                                 return Container(
                                   height: 250,
@@ -224,36 +224,15 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
                                   ]
                                   
                                 )));
-                              
                             }
                               );
                             }
                           }
-                      )
-                      ]
-
-                      )
-                      ),
-
-
-                    
-                  
+                      )]
+                      )),
                   SizedBox(height: 10),
                   Text("Settings", style: GoogleFonts.quicksand(textStyle: TextStyle(fontSize: 24, color: Color.fromARGB(200, 255, 255, 255), fontWeight: FontWeight.bold))),
                   SizedBox(height: 10),
-
-                  // ListView.separated(
-                  //   shrinkWrap: true,
-                  //     itemBuilder: (context, index) {
-                  //   return ListTile(
-                  //     title: Text("Macbook"),
-                  //     subtitle: Text("Apple"),
-                  //     trailing: Text("-2900"),
-                  //   );
-                  // }, separatorBuilder: (context, index) {
-                  //   return Divider(height: 16);
-                  // }, itemCount: 10)
-
                   FutureBuilder(
                     future: getData(),
                     builder: (_,snapshot){
@@ -289,12 +268,12 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
 
   Future getData() async {
     var firestore = Firestore.instance;
-    QuerySnapshot qn = await firestore.collection("UserSettings").getDocuments();
+    QuerySnapshot qn = await firestore.collection("UserSettings").orderBy('Order').getDocuments();
     return qn.documents;
   }
   Future getRecs() async{
     var firestore = Firestore.instance;
-    QuerySnapshot qn = await firestore.collection("Recommendations").getDocuments();
+    QuerySnapshot qn = await firestore.collection("Recommendations").orderBy('Rank', descending: true).getDocuments();
     return qn.documents;
   }
 
