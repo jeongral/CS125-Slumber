@@ -19,7 +19,8 @@ class _InfoPageState extends State<InfoPage> {
   int _age = 21;
   String _gender = "Male";
   String _activityLevel = "Very High";
-  String _sleepTime = DateFormat.jm().format(DateTime.now());
+  String _ssleepTime = DateFormat.jm().format(DateTime.now());
+  DateTime _sleepTime = DateTime.now();
   String _wakeTime = DateFormat.jm().format(DateTime.now());
   int _idealHours = 8;
 
@@ -91,7 +92,7 @@ class _InfoPageState extends State<InfoPage> {
     Firestore.instance.collection('UserSettings').document('Sleep Time').setData({
       'Title': 'Sleep Time',
       'Order': 4,
-      'Value': _sleepTime
+      'Value': _ssleepTime
     });
     Firestore.instance.collection('UserSettings').document('Ideal Hours').setData({
       'Title': 'Ideal Hours',
@@ -102,6 +103,54 @@ class _InfoPageState extends State<InfoPage> {
       'Title': 'Wake Time',
       'Order': 5,
       'Value': _wakeTime
+    });
+
+    int rank_getMoreSleep = 0;
+    int rank_tooMuchSleep = 0;
+    int rank_tooBusyToSleep = 0;
+    int rank_increaseActivity = 0;
+    int rank_nightOwl = 0;
+
+    if (_age < 20) {
+      rank_getMoreSleep = 1;
+      if (_idealHours < 8)
+        rank_getMoreSleep = 4;
+    }
+    Firestore.instance.collection('Recommendations').document('Get More Sleep').updateData({
+      'Rank': rank_getMoreSleep
+    });
+
+    if (_idealHours > 10) {
+      rank_tooMuchSleep = 4;
+    }
+    Firestore.instance.collection('Recommendations').document('Too Much Sleep').updateData({
+      'Rank': rank_tooMuchSleep
+    });
+
+    if (_activityLevel == 'Very High')
+      rank_tooBusyToSleep = 3;
+    else if (_activityLevel == 'High')
+      rank_tooBusyToSleep = 2;
+    else if (_activityLevel == 'Average')
+      rank_increaseActivity = 1;
+    else if (_activityLevel == 'Low')
+      rank_increaseActivity = 2;
+    else if (_activityLevel == 'Very Low')
+      rank_increaseActivity = 3;
+
+    Firestore.instance.collection('Recommendations').document('Too Busy to Sleep').updateData({
+      'Rank': rank_tooBusyToSleep
+    });
+
+    Firestore.instance.collection('Recommendations').document('Increase Physical Activity').updateData({
+      'Rank': rank_increaseActivity
+    });
+
+    if (_sleepTime.hour > 2 && _sleepTime.hour < 6)
+      rank_nightOwl = 4;
+
+    Firestore.instance.collection('Recommendations').document('Night Owl').updateData({
+      'Rank': rank_nightOwl
     });
   }
 
@@ -399,7 +448,7 @@ class _InfoPageState extends State<InfoPage> {
                                         children: <Widget>[
                                           Container(
                                             child: Text(
-                                              _sleepTime,
+                                              _ssleepTime,
                                               style: GoogleFonts.quicksand(
                                                 textStyle: TextStyle(
                                                   fontSize: 60.0,
@@ -422,7 +471,8 @@ class _InfoPageState extends State<InfoPage> {
                                                       theme: DatePickerTheme(),
                                                       showTitleActions: true,
                                                       onConfirm: (time) {
-                                                        _sleepTime = DateFormat.jm().format(time);
+                                                        _sleepTime = time;
+                                                        _ssleepTime = DateFormat.jm().format(time);
                                                         setState(() {});
                                                       },
                                                       currentTime: DateTime.now(),

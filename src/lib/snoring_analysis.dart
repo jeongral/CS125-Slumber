@@ -48,6 +48,10 @@ void updateSnoringLength(int snoringLength) async {
     firestore.collection("Journey").document("${date}").updateData({
       'snoringLength' : snoringLength
     });
+    if (snoringLength > 5) {
+      firestore.collection('Recommendations').document('Work on Breathing').updateData(
+      {'Rank': 3});
+    }
   }
   catch(e) {
     print(e);
