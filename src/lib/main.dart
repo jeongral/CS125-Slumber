@@ -285,7 +285,7 @@ void initBackgroundLocation() async {
       var dist = distance.as(LengthUnit.Mile,
         new LatLng(current.latitude, current.longitude), new LatLng(_home.latitude, _home.longitude)); // Placeholder home
 
-      if (dist > 5 && secSinceLastCheck > 10) { // API call if > 5 miles and 15 minutes (900 seconds) have passed
+      if (dist > 5 && secSinceLastCheck > 900) { // API call if > 5 miles and 15 minutes (900 seconds) have passed
         if (true) { // placeholder check if within an hour of sleep time
           recommendHome(current.latitude, current.longitude, _home.latitude, _home.longitude);
         }
