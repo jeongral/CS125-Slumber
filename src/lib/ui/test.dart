@@ -276,6 +276,16 @@ class _MenuDashboardPageState extends State<MenuDashboardPage> with SingleTicker
     return qn.documents;
   }
 
+  // Future addSampleRec() async{
+  //       Firestore.instance.runTransaction((transaction) async {
+  //         await transaction.set(Firestore.instance.collection("Recommendations").document(), {
+  //           'Title': "This is a sample",
+  //           'Details': "Test Test Test",
+  //           'Image': "https://firebasestorage.googleapis.com/v0/b/slumber-5f1b1.appspot.com/o/bed.png?alt=media&token=4ee0888c-6eed-436a-882d-8573fbca8494",
+  //         });
+  //       });
+  // }
+
    Widget userSettings(context){
      return new Container(
         child: FutureBuilder(
