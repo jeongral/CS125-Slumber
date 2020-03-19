@@ -7,7 +7,6 @@ import './ui/journey_page.dart';
 import './ui/profile_page.dart';
 import 'dart:ui';
 import 'dart:isolate';
-import './ui/test.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/rxdart.dart';
@@ -128,7 +127,7 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
   int currentTab = 0;
   HomePage one;
   Journey two;
-  MenuDashboardPage three;
+  ProfilePage three;
   List<Widget> pages;
   Widget currentPage;
 
@@ -160,7 +159,7 @@ class TabState extends State<TabView> with SingleTickerProviderStateMixin{
     super.initState();
     one = HomePage();
     two = Journey(); // probably don't need any of these params
-    three = MenuDashboardPage();
+    three = ProfilePage();
     //three.createState();
     //one.createState();
     pages = [one,two,three];
